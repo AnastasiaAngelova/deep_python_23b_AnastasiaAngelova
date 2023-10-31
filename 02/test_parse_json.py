@@ -85,7 +85,7 @@ class TestTask(unittest.TestCase):
         keyword = ["word1"]
         keyword_callback = Mock()
 
-        expected_calls = [call("word1")]
+        expected_calls = [call(['key1', 'Word1'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
         keyword_callback.assert_has_calls(expected_calls)
@@ -99,7 +99,7 @@ class TestTask(unittest.TestCase):
         keyword = ["word1", "word2"]
         keyword_callback = Mock()
 
-        expected_calls = [call("word1"), call("word2")]
+        expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
         keyword_callback.assert_has_calls(expected_calls, any_order=False)
@@ -113,7 +113,7 @@ class TestTask(unittest.TestCase):
         keyword = ["word1", "word2", "word3"]
         keyword_callback = Mock()
 
-        expected_calls = [call("word1"), call("word2")]
+        expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
         keyword_callback.assert_has_calls(expected_calls)
@@ -127,7 +127,7 @@ class TestTask(unittest.TestCase):
         keyword = ["word1", "word2", "word3"]
         keyword_callback = Mock()
 
-        expected_calls = [call("word1"), call("word2")]
+        expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
         keyword_callback.assert_has_calls(expected_calls)
@@ -141,10 +141,37 @@ class TestTask(unittest.TestCase):
         keyword = ["word1", "word2", "word3"]
         keyword_callback = Mock()
 
-        expected_calls = [call("word1"), call("word2"), call("word3")]
+        expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2']), call(['key2', 'Word3'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
         keyword_callback.assert_has_calls(expected_calls)
+
+    def test_parse_json_part_of_a_word(self):
+        """
+        keyword is a part of a word
+        """
+        json_str = '{"key1": "Word1_old new_Word2", "key2": "full_Word3.txt word4"}'
+        required_fields = ["key1", "key2"]
+        keyword = ["Word1", "wOrd2", "worD3"]
+        keyword_callback = Mock()
+
+        expected_calls = [call(['key1', 'Word1_old']),
+                          call(['key1', 'new_Word2']),
+                          call(['key2', 'full_Word3.txt'])]
+
+        parse_json(json_str, required_fields, keyword, keyword_callback)
+        keyword_callback.assert_has_calls(expected_calls)
+
+    def test_parse_json_empty_required_fields(self):
+        """
+        empty required fields
+        """
+        json_str = '{"key1": "Word1_old new_Word2", "key2": "full_Word3.txt word4"}'
+        required_fields = []
+        keyword = ["Word1", "wOrd2", "worD3"]
+
+        with self.assertRaises(ValueError):
+            parse_json(json_str, required_fields, keyword)
 
 
 if __name__ == '__main__':
