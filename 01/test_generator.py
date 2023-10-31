@@ -81,7 +81,7 @@ class TestTask(unittest.TestCase):
         self.assertEqual(keywords, ["роза", "азора"])
         self.assertEqual(line, "")
 
-    def test_filter_lines_by_keywords(self):
+    def test_filter_lines_by_keywords_one_result(self):
         """
         Проверяет, что функция filter_lines_by_keywords
         корректно фильтрует строки файла по ключевым словам.
@@ -97,6 +97,120 @@ class TestTask(unittest.TestCase):
         results = list(func_result)
 
         expected = ["А роЗа Упала На лапу азора"]
+
+        self.assertEqual(results, expected)
+
+    def test_filter_lines_by_keywords_many_results(self):
+        """
+        Проверяет, что функция filter_lines_by_keywords
+        корректно фильтрует строки файла по ключевым словам,
+        если по слову фильтру есть несколько совпадений.
+        """
+        file_mock = mock.Mock()
+        file_mock.return_value = mock.MagicMock()
+        file_mock.return_value.__iter__.side_effect = \
+            [iter(['А роЗа Упала На лапу азора', 'Розан', 'ароза',
+                   'Роза цветок'])]
+
+        keywords = ["Роза"]
+
+        func_result = filter_lines_by_keywords(file_mock(), keywords)
+        results = list(func_result)
+
+        expected = ["А роЗа Упала На лапу азора", 'Роза цветок']
+
+        self.assertEqual(results, expected)
+
+    def test_filter_lines_by_keywords_all_result(self):
+        """
+        Если все строки файла подходят
+        """
+        file_mock = mock.Mock()
+        file_mock.return_value = mock.MagicMock()
+        file_mock.return_value.__iter__.side_effect = \
+            [iter(['А роЗа Упала На лапу азора', 'Роза цветок', 'а роза'])]
+
+        keywords = ["РозА"]
+
+        func_result = filter_lines_by_keywords(file_mock(), keywords)
+        results = list(func_result)
+
+        expected = ["А роЗа Упала На лапу азора", "Роза цветок", "а роза"]
+
+        self.assertEqual(results, expected)
+
+    def test_filter_lines_by_keywords_case_insensitive(self):
+        """
+        Поиск с учетом регистронезависимости
+        """
+        file_mock = mock.Mock()
+        file_mock.return_value = mock.MagicMock()
+        file_mock.return_value.__iter__.side_effect = \
+            [iter(['А роЗа Упала На лапу азора', 'Розан', 'ароза',
+                   'рОзА цветок', 'РОЗА упала'])]
+
+        keywords = ["Роза"]
+
+        func_result = filter_lines_by_keywords(file_mock(), keywords)
+        results = list(func_result)
+
+        expected = ["А роЗа Упала На лапу азора", "рОзА цветок", "РОЗА упала"]
+
+        self.assertEqual(results, expected)
+
+    def test_filter_lines_by_keywords_several_filters(self):
+        """
+        Несколько фильтров
+        """
+        file_mock = mock.Mock()
+        file_mock.return_value = mock.MagicMock()
+        file_mock.return_value.__iter__.side_effect = \
+            [iter(['А роЗа Упала На лапу азора', 'Розан', 'ароза',
+                   'автобус энергетиков'])]
+
+        keywords = ["Роза", "автобус"]
+
+        func_result = filter_lines_by_keywords(file_mock(), keywords)
+        results = list(func_result)
+
+        expected = ["А роЗа Упала На лапу азора", "автобус энергетиков"]
+
+        self.assertEqual(results, expected)
+
+    def test_filter_lines_by_keywords_several_filters_in_str(self):
+        """
+        Совпадение нескольких фильтров в одной строке
+        """
+        file_mock = mock.Mock()
+        file_mock.return_value = mock.MagicMock()
+        file_mock.return_value.__iter__.side_effect = \
+            [iter(['А роЗа Упала На лапу азора', 'Розан', 'ароза',
+                   'на азОра свалилась роза'])]
+
+        keywords = ["Роза", "азора"]
+
+        func_result = filter_lines_by_keywords(file_mock(), keywords)
+        results = list(func_result)
+
+        expected = ["А роЗа Упала На лапу азора", "на азОра свалилась роза"]
+
+        self.assertEqual(results, expected)
+
+    def test_filter_lines_by_keywords_filter_eq_str(self):
+        """
+        Слово фильтр целиком совпадает со строкой в файле
+        """
+        file_mock = mock.Mock()
+        file_mock.return_value = mock.MagicMock()
+        file_mock.return_value.__iter__.side_effect = \
+            [iter(['А роЗа Упала На лапу азора', 'Розан', 'ароза'])]
+
+        keywords = ['розан']
+
+        func_result = filter_lines_by_keywords(file_mock(), keywords)
+        results = list(func_result)
+
+        expected = ["Розан"]
 
         self.assertEqual(results, expected)
 
