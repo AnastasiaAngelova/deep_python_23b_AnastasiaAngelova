@@ -124,7 +124,18 @@ def get_logger(s, f):
                 message = record.getMessage()
                 word_count = len(message.split())
                 return word_count % 2 == 0
-        logger.addFilter(EvenWordCountFilter())
+
+        logger.handlers[handlers.index("stream_handler")]\
+            .addFilter(EvenWordCountFilter())
+
+        class OddWordCountFilter(logging.Filter):
+            def filter(self, record):
+                message = record.getMessage()
+                word_count = len(message.split())
+                return word_count % 2 != 0
+
+        logger.handlers[handlers.index("file_handler")]\
+            .addFilter(OddWordCountFilter())
 
     return logger
 
