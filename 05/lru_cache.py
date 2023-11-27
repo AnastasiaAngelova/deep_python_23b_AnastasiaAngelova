@@ -1,4 +1,4 @@
-class LRUCache:
+class LruCache:
     class Node:
         def __init__(self, key=None, value=None):
             self.key = key
