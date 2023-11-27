@@ -1,6 +1,6 @@
 class CustomList(list):
     def __str__(self):
-        return " ".join([str(x) for x in self]) + " sum=" + str(len(self))
+        return " ".join([str(x) for x in self]) + " sum=" + str(sum(self))
 
     def __add__(self, other):
         list_add = CustomList()
@@ -18,16 +18,16 @@ class CustomList(list):
         return CustomList.__add__(other, self)
 
     def __sub__(self, other):
-        list_add = CustomList()
+        list_sub = CustomList()
         for i in range(min(len(self), len(other))):
-            list_add.append(self[i] - other[i])
+            list_sub.append(self[i] - other[i])
         if len(self) > len(other):
             for i in range(len(other), len(self)):
-                list_add.append(self[i])
+                list_sub.append(self[i])
         elif len(self) < len(other):
             for i in range(len(self), len(other)):
-                list_add.append(-other[i])
-        return list_add
+                list_sub.append(-other[i])
+        return list_sub
 
     def __rsub__(self, other):
         return CustomList.__sub__(other, self)
