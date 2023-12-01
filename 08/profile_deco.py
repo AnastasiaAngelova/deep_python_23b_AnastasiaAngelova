@@ -2,18 +2,20 @@ import cProfile
 import io
 import pstats
 
-profile_dict = {}
-
 
 def profile_deco(func):
-    global profile_dict
+    profile_dict = {}
 
     def wrapper(*args, **kwargs):
         func_name = func.__name__
         if func_name not in profile_dict:
             profile_dict[func_name] = cProfile.Profile()
 
-        profile_dict[func_name].runcall(func, *args, **kwargs)
+        profile_dict[func_name].enable()
+        result = func(*args, **kwargs)
+        profile_dict[func_name].disable()
+
+        return result
 
     def print_stat():
         func_name = func.__name__
