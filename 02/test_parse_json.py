@@ -64,18 +64,6 @@ class TestTask(unittest.TestCase):
         with self.assertRaises(ValueError):
             parse_json(json_str, required_fields, keyword, keyword_callback)
 
-    def test_parse_json_wrong_key(self):
-        """
-        if key error
-        """
-        json_str = '{"key1": "Word1 word2"}'
-        required_fields = ["wrong_key"]
-        keyword = ["word2"]
-        keyword_callback = Mock()
-
-        with self.assertRaises(KeyError):
-            parse_json(json_str, required_fields, keyword, keyword_callback)
-
     def test_parse_json_1_keyword(self):
         """
         1 in
@@ -84,11 +72,10 @@ class TestTask(unittest.TestCase):
         required_fields = ["key1"]
         keyword = ["word1"]
         keyword_callback = Mock()
-
         expected_calls = [call(['key1', 'Word1'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
-        keyword_callback.assert_has_calls(expected_calls)
+        self.assertEqual(keyword_callback.mock_calls, expected_calls)
 
     def test_parse_json_some_keywords(self):
         """
@@ -99,10 +86,11 @@ class TestTask(unittest.TestCase):
         keyword = ["word1", "word2"]
         keyword_callback = Mock()
 
-        expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2'])]
+        expected_calls = [call(['key1', 'Word1']),
+                          call(['key1', 'word2'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
-        keyword_callback.assert_has_calls(expected_calls, any_order=False)
+        self.assertEqual(keyword_callback.mock_calls, expected_calls)
 
     def test_parse_json_missing_keyword(self):
         """
@@ -116,7 +104,7 @@ class TestTask(unittest.TestCase):
         expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
-        keyword_callback.assert_has_calls(expected_calls)
+        self.assertEqual(keyword_callback.mock_calls, expected_calls)
 
     def test_parse_json_some_keys(self):
         """
@@ -127,10 +115,11 @@ class TestTask(unittest.TestCase):
         keyword = ["word1", "word2", "word3"]
         keyword_callback = Mock()
 
-        expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2'])]
+        expected_calls = [call(['key1', 'Word1']),
+                          call(['key1', 'word2'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
-        keyword_callback.assert_has_calls(expected_calls)
+        self.assertEqual(keyword_callback.mock_calls, expected_calls)
 
     def test_parse_json_some_required_fields(self):
         """
@@ -141,37 +130,75 @@ class TestTask(unittest.TestCase):
         keyword = ["word1", "word2", "word3"]
         keyword_callback = Mock()
 
-        expected_calls = [call(['key1', 'Word1']), call(['key1', 'word2']), call(['key2', 'Word3'])]
+        expected_calls = [call(['key1', 'Word1']),
+                          call(['key1', 'word2']),
+                          call(['key2', 'Word3'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
-        keyword_callback.assert_has_calls(expected_calls)
+        self.assertEqual(keyword_callback.mock_calls, expected_calls)
+
+    def test_parse_json_different_register(self):
+        """
+        different register
+        """
+        json_str = '{"key1": "word1 woRD2 WORD3",' \
+                   '"key2": "woRD1 word2 word3",' \
+                   '"key3": "WORD1 WORD2 woRD3"}'
+        required_fields = ["key1", "key2", "key3"]
+        keyword = ["word1", "woRD2", "WORD3"]
+        keyword_callback = Mock()
+
+        expected_calls = [call(['key1', 'word1']),
+                          call(['key1', 'woRD2']),
+                          call(['key1', 'WORD3']),
+                          call(['key2', 'woRD1']),
+                          call(['key2', 'word2']),
+                          call(['key2', 'word3']),
+                          call(['key3', 'WORD1']),
+                          call(['key3', 'WORD2']),
+                          call(['key3', 'woRD3'])]
+
+        parse_json(json_str, required_fields, keyword, keyword_callback)
+        self.assertEqual(keyword_callback.mock_calls, expected_calls)
 
     def test_parse_json_part_of_a_word(self):
         """
-        keyword is a part of a word
+        parse of a word (False)
         """
-        json_str = '{"key1": "Word1_old new_Word2", "key2": "full_Word3.txt word4"}'
-        required_fields = ["key1", "key2"]
-        keyword = ["Word1", "wOrd2", "worD3"]
+        json_str = '{"key1": "my word", ' \
+                   '"key2": "my_word", ' \
+                   '"key3": "word1"}'
+        required_fields = ["key1", "key2", "key3"]
+        keyword = ["word"]
         keyword_callback = Mock()
 
-        expected_calls = [call(['key1', 'Word1_old']),
-                          call(['key1', 'new_Word2']),
-                          call(['key2', 'full_Word3.txt'])]
+        expected_calls = [call(['key1', 'word'])]
 
         parse_json(json_str, required_fields, keyword, keyword_callback)
-        keyword_callback.assert_has_calls(expected_calls)
+        self.assertEqual(keyword_callback.mock_calls, expected_calls)
 
     def test_parse_json_empty_required_fields(self):
         """
         empty required fields
         """
-        json_str = '{"key1": "Word1_old new_Word2", "key2": "full_Word3.txt word4"}'
+        json_str = '{"key1": "word"}'
         required_fields = []
-        keyword = ["Word1", "wOrd2", "worD3"]
+        keyword = ["word"]
 
         with self.assertRaises(ValueError):
             parse_json(json_str, required_fields, keyword)
+
+    def test_parse_json_no_json_key_of_required_fields(self):
+        """
+        no json key of required fields
+        """
+        json_str = '{"key1": "word"}'
+        required_fields = ["wrong key"]
+        keyword = ["word"]
+        keyword_callback = Mock()
+
+        parse_json(json_str, required_fields, keyword, keyword_callback)
+        self.assertEqual(keyword_callback.mock_calls, [])
 
 
 if __name__ == '__main__':
