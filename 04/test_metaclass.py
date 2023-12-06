@@ -56,14 +56,14 @@ class TestMetaClass(unittest.TestCase):
     def test_non_existent_field_error(self):
         inst = CustomClass()
         with self.assertRaises(AttributeError):
-            inst.yyy()
+            inst.yyy
 
     # dynamic
     def test_dynamic_field_old_name_error(self):
         inst = CustomClass()
         inst.dynamic = "added later"
         with self.assertRaises(AttributeError):
-            inst.dynamic()
+            inst.dynamic
 
     def test_dynamic_field_new_name_ok(self):
         inst = CustomClass()
@@ -75,6 +75,15 @@ class TestMetaClass(unittest.TestCase):
         inst = CustomClass()
         inst.custom_val = 150
         self.assertEqual(inst.custom_val, 150)
+
+    def test_change_old_err(self):
+        inst = CustomClass()
+        inst.val = 150
+        with self.assertRaises(AttributeError):
+            inst.val += 50
+        self.assertEqual(inst.custom_val, 150)
+        inst.custom_val = 200
+        self.assertEqual(inst.custom_val, 200)
 
 
 if __name__ == "__main__":

@@ -127,6 +127,37 @@ class TestPredictMessageMood(unittest.TestCase):
     def test_phone_number_get_none(self):
         self.assertIsNone(BankAccount.phone_number)
 
+    def test_balance_rewrite(self):
+        phone_number = "+7(800)555-35-35"
+        password = "@n1g1l9t0r#"
+        balance = 0
+        account = BankAccount(phone_number, password, balance)
+
+        account.balance = 1
+        self.assertEqual(account.balance, 1)
+
+        account.password = "@fsakfas16"
+        self.assertEqual(account.password, "@fsakfas16")
+
+        account.phone_number = "+7(977)666-13-37"
+        self.assertEqual(account.phone_number, "+7(977)666-13-37")
+
+    def test_balance_rewrite_err(self):
+        phone_number = "+7(800)555-35-35"
+        password = "@n1g1l9t0r#"
+        balance = 0
+        account = BankAccount(phone_number, password, balance)
+        with self.assertRaises(ValueError):
+            account.balance = -1
+        with self.assertRaises(ValueError):
+            account.phone_number = "sumsung"
+        with self.assertRaises(ValueError):
+            account.password = "qwerty123"
+
+        self.assertEqual(account.balance, 0)
+        self.assertEqual(account.phone_number, "+7(800)555-35-35")
+        self.assertEqual(account.password, "@n1g1l9t0r#")
+
 
 if __name__ == "__main__":
     unittest.main()

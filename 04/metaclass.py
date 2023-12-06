@@ -2,7 +2,7 @@ class CustomMeta(type):
     def __new__(mcs, name, bases, dct):
         new_dict = {}
         for attr_name, attr_value in dct.items():
-            if not attr_name.startswith("__"):
+            if not attr_name.endswith("__"):
                 new_dict["custom_" + attr_name] = attr_value
             else:
                 new_dict[attr_name] = attr_value
